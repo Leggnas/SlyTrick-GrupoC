@@ -1,0 +1,26 @@
+FASE 2 JUEGOS EN RED - GRUPO C
+
+Hemos cambiado ciertos aspectos del diseño del juego respecto a la fase 1:
+-No hay puntuación, consiste simplemente en sobrevivir.
+-La cámara no está centrada en el jugador que está más abajo, en cambio, las plataformas van subiendo cada vez más rápido.
+-Después de la presentación de la primera fase lo hablamos y decidimos que poner a cada cubo en un espacio separado era un poco inútil, por lo que ahora están juntos en una misma pantalla.
+
+Ideas que hemos dejado pendientes para implementar en la siguiente fase:
+- Implementación de otros obstáculos como pegamento o resorte (sprites en trello).
+- Animaciones en el menú y en el juego en sí como las sierras de arriba y abajo.
+- Elementos que aparezcan en el fondo para que no sea simplemente una pared y le de un   poco más de aspecto en el laboratorio.
+-Pantalla de pausa
+-Música ambiente
+
+Programación: Ignacio Esteban Conde y Raúl Hernández Iglesias
+Arte: Angel Serradilla Carabias y Marco Olmos Vázquez (aportes del equipo de programación.)
+Sonidos: Marco Olmos Vázquez
+Diseño: Angel Serradilla Carabias (y aportes del resto de integrantes.)
+
+Organizado en trello: https://trello.com/b/FhPnVE1J/juegos-en-red-grupo-c
+
+Los cubos y el resto de sprites, tanto las plataformas como los fondos, títulos,etc. están hechos en photoshop por nosotros. El cubo está basado en la estética de Geometry Dash.
+
+Los sonidos están sacados de https://freesound.org/ que es un repositorio libre de sonidos.
+
+Funciones para crear y destruir plataformas aleatoriamente sacadas de (con posterior modificación): https://www.emanueleferonato.com/2018/12/06/html5-endless-runner-built-with-phaser-and-arcade-physics-step-3-adding-textures-to-platforms-and-coins-to-collect/

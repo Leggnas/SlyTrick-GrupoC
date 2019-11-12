@@ -1,0 +1,303 @@
+
+
+class Escena2 extends Phaser.Scene{
+    constructor() {
+        super("juego");
+        
+    }
+    
+    preload(){
+        this.load.image("fondo", "assets/fondo.png");
+        this.load.image("plataforma", "assets/plataforma.png");
+        this.load.image("plat_muelle", "assets/plat_muelle.png");
+        this.load.image("plat_pegajoso", "assets/plat_pegajoso.png");
+        this.load.image("plat_pinchos", "assets/plat_pinchos.png");
+        this.load.image("cubo", "assets/cubo.png");
+        this.load.image("sierras", "assets/sierras.png");
+        this.load.spritesheet('cuboR', 'assets/cuboR.png', { frameWidth: 80, frameHeight: 80 });
+        this.load.spritesheet('cuboA', 'assets/cuboA.png', { frameWidth: 80, frameHeight: 80 });
+    }
+    
+    create() {
+        
+        this.background = this.add.tileSprite(0,0, config.width,
+                config.height, "fondo");
+        this.background.setOrigin(0,0);
+        sierras = this.physics.add.sprite(250, 775, "sierras");
+        sierras.body.setImmovable(true);
+        sierras.body.setAllowGravity(false);
+        sierras.depth = 100;
+        sierrasT = this.physics.add.sprite(250, 25, "sierras");
+        sierrasT.body.setImmovable(true);
+        sierrasT.body.setAllowGravity(false);
+        sierrasT.setRotation(3.14);
+        sierrasT.depth = 100;
+        //Variables de control del cubo Azul
+        this.cuboAX = carril[5];
+        this.nuevaAX = carril[5];
+        this.flipflopA = true;
+        this.lastPressA = false;
+        //Variables de control del cubo Rojo
+        this.cuboRX = carril[0];
+        this.nuevaRX = carril[0];
+        this.flipflopR = true;
+        this.lastPressR = true;
+        //Crear los controles de teclado
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.teclaA = this.input.keyboard.addKey('A');
+        this.teclaD = this.input.keyboard.addKey('D');
+        this.enter = this.input.keyboard.addKey(13);
+        //Crear los dos cubos de los dos jugadores
+        cuboR = this.physics.add.sprite(carril[0], 150, "cuboR");
+        cuboR.setCollideWorldBounds(true);
+        cuboA = this.physics.add.sprite(carril[5], 150, "cuboA");
+        cuboA.setCollideWorldBounds(true);
+        //Crear las plataformas de inicio
+        platafInicioR = this.physics.add.image(carril[0], 200, 'plataforma')
+            .setImmovable(true)
+            .setVelocity(0, 0);
+        platafInicioR.body.setAllowGravity(false);
+        platafInicioA = this.physics.add.image(carril[5], 200, 'plataforma')
+            .setImmovable(true)
+            .setVelocity(0, 0);
+        platafInicioA.body.setAllowGravity(false);
+        plataf = this.add.group();
+        platafMuerte = this.add.group();
+        this.crearFila();
+        //Colisiones del cubo Rojo
+        this.physics.add.collider(cuboR, platafInicioR);
+        this.physics.add.collider(cuboR, plataf);
+        this.physics.add.overlap(cuboR, platafMuerte, this.muerteR, null, this);
+        this.physics.add.collider(cuboR, sierras, this.muertesierrasR, null, this);
+        this.physics.add.collider(cuboR, sierrasT, this.muertesierrasR, null, this);
+        //Colisiones del cubo Azul
+        this.physics.add.collider(cuboA, platafInicioA);
+        this.physics.add.collider(cuboA, plataf);
+        this.physics.add.overlap(cuboA, platafMuerte, this.muerteA, null, this);
+        this.physics.add.collider(cuboA, sierras, this.muertesierrasA, null, this);
+        this.physics.add.collider(cuboA, sierrasT, this.muertesierrasA, null, this);
+        //Animaciones
+        this.anims.create({
+            key: "animRojoDer",
+            frames: this.anims.generateFrameNumbers("cuboR", {start: 1}),
+            frameRate: 40,
+            repeat: 0
+        })
+        
+        this.anims.create({
+            key: "animRojoIzq",
+            frames: this.anims.generateFrameNumbers("cuboR", {start: 4, end: 0}),
+            frameRate: 40,
+            repeat: 0
+        })
+        
+        this.anims.create({
+            key: "animAzulDer",
+            frames: this.anims.generateFrameNumbers("cuboA", {start: 1}),
+            frameRate: 40,
+            repeat: 0
+        })
+        
+        this.anims.create({
+            key: "animAzulIzq",
+            frames: this.anims.generateFrameNumbers("cuboA", {start: 4, end: 0}),
+            frameRate: 40,
+            repeat: 0
+        })
+    }
+               
+    update() {
+        //Si te mueres se acaba
+        if(this.enter.isDown && menu){
+            this.scene.start("menu");
+        }
+        if (gameOver){return;}
+        //Movimiento del fondo
+        this.background.tilePositionY += 1;
+        
+        //Eliminar plataformas normales
+        minDistance = game.config.height;
+        plataf.getChildren().forEach(function(platform){
+            platformDistance = game.config.height - platform.y - platform.displayHeight / 2;
+            if(platformDistance < minDistance){
+                minDistance = platformDistance;
+            }
+            if(platform.y < - platform.displayHeight / 2){
+                plataf.killAndHide(platform);
+                plataf.remove(platform);
+            }
+        }, this);
+        //Eliminar plataformas con pinchos
+        platafMuerte.getChildren().forEach(function(platform){
+            platformDistance = game.config.height - platform.y - platform.displayHeight / 2;
+            if(platformDistance < minDistance){
+                minDistance = platformDistance;
+            }
+            if(platform.y < - platform.displayHeight / 2){
+                platafMuerte.killAndHide(platform);
+                platafMuerte.remove(platform);
+            }
+        }, this); 
+        //Añadir nuevas plataformas
+        if(minDistance > distanciaFilas){
+            this.crearFila();
+        }
+        ///////////////////////////////////////
+        //Gestor del movimiento del cubo Rojo//
+        ///////////////////////////////////////
+        this.cuboRX = cuboR.x;
+        if(this.flipflopR){
+            if (this.cursors.left.isDown){
+                    this.flipflopR = false;
+                    this.lastPressR= true;
+                    if(cuboR.x > 50){
+                        this.nuevaRX = this.cuboRX-80;
+                        cuboR.play("animRojoIzq");
+                        cuboR.setVelocityX(-1000);
+                    }
+            }else if (this.cursors.right.isDown){
+                    platafInicioR.disableBody(true, true);
+                    this.flipflopR = false;
+                    this.lastPressR= false;
+                    if(cuboR.x < 450){
+                        this.nuevaRX = this.cuboRX+80;
+                        cuboR.play("animRojoDer");
+                        cuboR.setVelocityX(1000);
+                    }
+            }
+        }
+        if(this.lastPressR){
+                if(this.nuevaRX >= this.cuboRX){
+                    cuboR.setVelocityX(0);
+                    cuboR.x = this.nuevaRX;
+                }
+        }
+        if(!this.lastPressR) {
+            if(this.nuevaRX <= this.cuboRX){
+                cuboR.setVelocityX(0);
+                cuboR.x = this.nuevaRX;
+            }
+        }
+        if(this.cursors.right.isUp && this.cursors.left.isUp){
+            this.flipflopR=true;
+        }
+        ///////////////////////////////////////
+        //Gestor del movimiento del cubo Azul//
+        ///////////////////////////////////////
+        this.cuboAX = cuboA.x;
+        if(this.flipflopA){
+            if (this.teclaA.isDown){
+                    platafInicioA.disableBody(true, true);
+                    this.flipflopA = false;
+                    this.lastPressA= true;
+                    if(cuboA.x > 50){
+                        this.nuevaAX = this.cuboAX-80;
+                        cuboA.play("animAzulIzq");
+                        cuboA.setVelocityX(-1000);
+                    }
+            }else if (this.teclaD.isDown){
+                    this.flipflopA = false;
+                    this.lastPressA= false;
+                    if(cuboA.x < 450){
+                        this.nuevaAX = this.cuboAX+80;
+                        cuboA.play("animAzulDer");
+                        cuboA.setVelocityX(1000);
+                    }
+            }
+        }
+        if(this.lastPressA){
+                if(this.nuevaAX >= this.cuboAX){
+                    cuboA.setVelocityX(0);
+                    cuboA.x = this.nuevaAX;
+                }
+        }
+        if(!this.lastPressA) {
+            if(this.nuevaAX <= this.cuboAX){
+                cuboA.setVelocityX(0);
+                cuboA.x = this.nuevaAX;
+            }
+        }
+        if(this.teclaD.isUp && this.teclaA.isUp){
+            this.flipflopA=true;
+        }
+    }
+    
+    crearFila(){
+        let platform;
+        let randomPlat = Math.floor((Math.random() * 6));
+        let cuantos = Math.floor((Math.random() * 4));
+        let pinchos = Math.floor((Math.random() * 31));
+        velY *= 1.01;
+        for(var i = 0; i < cuantos; i++){
+            let randomPlatP;
+            do{
+                randomPlatP = Math.floor((Math.random() * 6));
+            }while(randomPlat === randomPlatP);
+            randomPlat = randomPlatP;
+            platform = this.add.image(carril[randomPlat], 810, 'plataforma');
+            this.physics.add.existing(platform);
+            platform.body.setImmovable(true);
+            platform.body.setAllowGravity(false);
+            platform.body.setVelocityY(velY);
+            plataf.add(platform);
+        }
+        if(pinchos < 10){
+            randomPlat = Math.floor((Math.random() * 6));
+            platform = this.add.image(carril[randomPlat], 804, 'plat_pinchos');
+            this.physics.add.existing(platform);
+            platform.body.setImmovable(true);
+            platform.body.setAllowGravity(false);
+            platform.body.setVelocityY(velY);
+            platafMuerte.add(platform);
+        }
+    }
+    
+    muerteR(){
+        for(let i = 0; i < 6; i++){
+            if(cuboR.x === carril[i]){
+                this.physics.pause();
+                this.add.text(125 ,350, "Gana el jugador Azul!\n Pulsa enter para ir al menu", {
+                    font: "25px Arial",
+                    fill: "blue"
+                });
+                gameOver = true;
+                menu = true;
+            }
+        }
+    }
+    
+    muerteA(){
+        for(let i = 0; i < 6; i++){
+            if(cuboA.x === carril[i]){
+                this.physics.pause();
+                this.add.text(125 ,350, "Gana el jugador Rojo!\n Pulsa enter para ir al menu", {
+                    font: "25px Arial",
+                    fill: "red"
+                });
+                gameOver = true;
+                menu = true;
+            }
+        }
+    }
+    
+    muertesierrasR() {
+        this.physics.pause();
+        this.add.text(125 ,350, "Gana el jugador Azul!\n Pulsa enter para ir al menu", {
+            font: "25px Arial",
+            fill: "blue"
+        });
+        gameOver = true;
+        menu = true;
+    }
+    muertesierrasA() {
+        this.physics.pause();
+        this.add.text(125 ,350, "Gana el jugador Rojo!\n Pulsa enter para ir al menu", {
+            font: "25px Arial",
+            fill: "red"
+        });
+        gameOver = true;
+        menu = true;
+    }
+}
+
+
